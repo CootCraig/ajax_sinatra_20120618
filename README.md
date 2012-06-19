@@ -29,6 +29,13 @@ developing I went.
 1. There's this DLL for getting events from the phone switch; sure hope I can get this to work.
 
 ## Access the Phone Switch DLL from Ruby
+There's a gem for that: Here's one that will connect DLLs to Ruby
+
+```ruby
+require 'ffi'
+```
+
+cvlancli.dll
 
 ## Picking the tools
 
