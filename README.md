@@ -18,7 +18,7 @@ The shop infracture is Windows OS, MSSQL and Firefox for the browser.
 I'm a happy Ruby programmer and management was fine with that so a
 developing I went.
 
-![System Diagram](/z/D/system_diagram.png)
+![System Diagram](system_diagram.png)
 
 ## Access the Phone Switch DLL from Ruby
 
