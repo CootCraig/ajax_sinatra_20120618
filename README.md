@@ -18,6 +18,8 @@ The shop infracture is Windows OS, MSSQL and Firefox for the browser.
 I'm a happy Ruby programmer and management was fine with that so a
 developing I went.
 
+![System Diagram](https://github.com/CootCraig/ajax_sinatra_20120618/blob/master/system_diagram.png)
+
 <img src="https://github.com/CootCraig/ajax_sinatra_20120618/blob/master/system_diagram.png" alt="System Diagram"/>
 
 ## Access the Phone Switch DLL from Ruby
