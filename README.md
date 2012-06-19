@@ -1,4 +1,3 @@
-ajax_sinatra_20120618
-=====================
+# Linked Servers
 
 Markdown outline for a presentation to Not Just Ruby
