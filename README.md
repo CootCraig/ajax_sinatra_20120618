@@ -1,8 +1,26 @@
 # Linked Servers Distributing AJAX events from multiple sources
 
-A presentation to Not Just Ruby
+A presentation to Not Just Ruby by the "Coot" Craig Anderson.
 
 ## Project Overview
+
+The call center I work at wanted to distribute call progress events to
+various pieces of software on computers throughout the company intranet.
+There is both inbound and outbound work.
+
+A windows DLL is available to get inbound call events from the phone switch.
+
+No centralized source was available for outbound calls, but messages
+are sent to the workstations of outbound agents logged into the dialer.
+
+The shop infracture is Windows OS, MSSQL and Firefox for the browser.
+
+I'm a happy Ruby programmer and management was fine with that so a
+developing I went.
+
+## Picking the tools
+
+## Collecting the Inbound events
 
 ## Omq Overview
 
