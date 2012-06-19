@@ -20,7 +20,7 @@ developing I went.
 
 ![System Diagram](https://github.com/CootCraig/ajax_sinatra_20120618/blob/master/system_diagram.png)
 
-<img src="https://github.com/CootCraig/ajax_sinatra_20120618/blob/master/system_diagram.png" alt="System Diagram"/>
+<img src="https://github.com/CootCraig/ajax_sinatra_20120618/blob/master/system_diagram.png" alt="System Diagram"></img>
 
 ## Access the Phone Switch DLL from Ruby
 
