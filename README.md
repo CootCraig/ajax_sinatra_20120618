@@ -22,6 +22,12 @@ developing I went.
 
 <img src="https://github.com/CootCraig/ajax_sinatra_20120618/blob/master/system_diagram.png" alt="System Diagram"></img>
 
+## The Plan such as it was
+
+1. I've used Sinatra as an HTTP application before, so that's decided.
+1. Distributing events sounds like AJAX. I've never worked with AJAX.  Does it work with Sinatra.  I'll find out.
+1. There's this DLL for getting events from the phone switch; sure hope I can get this to work.
+
 ## Access the Phone Switch DLL from Ruby
 
 ## Picking the tools
