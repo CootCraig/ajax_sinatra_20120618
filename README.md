@@ -3,17 +3,40 @@
 A presentation to Not Just Ruby
 
 ## Project Overview
+
+## Omq Overview
+
+[The Intelligent Transport Layer](http://www.zeromq.org/)
+
+[The excellent guide for 0mQ](http://zguide.zeromq.org/page:all)
+
+### From the Guide - ØMQ in a Hundred Words
+
+ØMQ (ZeroMQ, 0MQ, zmq) looks like an embeddable networking library but
+acts like a concurrency framework. It gives you sockets that carry whole
+messages across various transports like in-process, inter-process, TCP,
+and multicast. You can connect sockets N-to-N with patterns like fanout,
+pub-sub, task distribution, and request-reply. It's fast enough to be
+the fabric for clustered products. Its asynchronous I/O model gives you
+scalable multicore applications, built as asynchronous message-processing
+tasks. It has a score of language APIs and runs on most operating
+systems. ØMQ is from iMatix and is LGPL open source.
+
+I heard of 0MQ because DCell, the distributed extension to Celluloid
+uses 0MQ for remote messaging.
+
+2 types of 0mq sockets are used:
+
 ## VB.net 0mq Event Injector
+
+I wrote a VB.net console application to send arbitrary events
+to a 0mq
+
 ```
     Sub Main(ByVal args As String())
-        Try
-            log4net.Config.XmlConfigurator.Configure()
-            logger = log4net.LogManager.GetLogger("app")
             Dim zmq_context As New ZMQ.Context
             Dim zsock As ZMQ.Socket = Nothing
             Dim msg As New Dictionary(Of String, String)
-            Dim key As String = Nothing
-            Dim val As String = Nothing
 
             zsock = zmq_context.Socket(SocketType.REQ)
             zsock.Connect(My.Settings.InjectEventUri)
