@@ -1,3 +1,5 @@
-# Linked Servers
+# Linked Servers Distributing AJAX events from multiple sources
 
-Markdown outline for a presentation to Not Just Ruby
+A presentation to Not Just Ruby
+
+## Project Overview
