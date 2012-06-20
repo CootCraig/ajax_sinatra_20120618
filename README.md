@@ -37,7 +37,7 @@ require 'ffi'
 
 I know the name of the DLL, cvlancli.dll, and have a C header file with the interface, asai_str.h.
 
-The functions look like this:
+The C functions look like this:
 
 ```C
 DECLDLL	long asai_close(const void *libPtr, int fd);
@@ -49,7 +49,7 @@ DECLDLL	long asai_set_env(const void *libPtr, int fd, long characteristic, set_t
 DECLDLL	int asai_open(const void *libPtr, char path[], int flags);
 ```
 
-The Ruby wrapper to the DLL.
+The Ruby wrapper to the DLL functions.
 
 ```ruby
 require 'ffi'
@@ -112,7 +112,7 @@ In FFI / Ruby.
   )
 ```
 
-The event interface is handled by 2 ruby functions.
+The event interface is handled by 2 ruby functions with the help of FFI.
 
 ```ruby
 module CvlanLib
@@ -142,9 +142,19 @@ module CvlanLib
 end
 ```
 
-## Picking the tools
+Whew! that wasn't easy, but FFI made it straight forward.
 
 ## Collecting the Inbound events
+
+The phone switch is programmed so that the inbound phone numbers, say 800-123-4567, is referenced by the last 4 digits, 4567, known as a "Vector Directory Number" (VDN).
+
+After a lot of experimentation I find that VDN is accessed through the DLL as separate network socket.
+
+```ruby
+asai_fd = CvlanLib::asai_open_vdn_events(APP_CONFIG['cvlan_ip'],vdn,APP_CONFIG['cvlan_node'])
+```
+
+The active VDNs are listed in a config file.
 
 ## Omq Overview
 
