@@ -69,6 +69,49 @@ module CvlanLib
 end
 ```
 
+A sample struct.
+
+```ruby
+typedef struct {
+	capability_t	capability;
+	primitive_t	primitive_type;
+	long	cluster_id;
+	long	reserved;
+} asai_common_t;
+
+typedef struct {
+	asai_common_t	asai_common;
+	long			domain_type;
+	char			*domain_ext;
+	char			pool[C_DATSZ];
+} cv_info_t;
+```
+
+Look at this, There are enums passed back and forth.  In C.
+
+```C
+/* service_type values indicating capability */
+typedef enum {
+	C_3PCC,			/*  0 */
+...
+	C_EN_REQ,		/* 23 */
+...
+	C_3PSSC_CONF		/* 58 */
+} capability_t;
+```
+
+In FFI / Ruby.
+
+```C
+  CAPABILITY_T = enum(
+    :C_3PCC ,  0,
+...
+    :C_EN_REQ ,  23,
+...
+    :C_3PSSC_CONF ,  58
+  )
+```
+
 The event interface is handled by 2 ruby functions.
 
 ```ruby
