@@ -211,7 +211,8 @@ end
 inject_target = Proc.new do |call_event|
   Celluloid::Actor[:connected_calls].broadcast_event!(call_event)
 end
-Celluloid::Actor[:inject_events] = CvlanCallEventSourceApp::InjectEventActor.new(@@zeromq_inject_event_uri, inject_target)
+Celluloid::Actor[:inject_events] =
+              CvlanCallEventSourceApp::InjectEventActor.new(@@zeromq_inject_event_uri, inject_target)
 
 Celluloid::Actor[:asai_parse] = CvlanCallEventSourceApp::AsaiParseEventActor.new(writer_target)
 
@@ -226,6 +227,16 @@ APP_CONFIG['vdns'].each do |vdn|
   Celluloid::Actor[actor_symbol] = CvlanCallEventSourceApp::AsaiRcvActor.new(vdn,asai_fd,rcv_target)
   Celluloid::Actor[actor_symbol].run!
 end
+```
+4 types of actor form the event pipeline.
+
+```
+AsaiRcvActor ---|
+AsaiRcvActor ---|----> AsaiParseEventActor ---> ConnectedCallsActor
+ ...            |                                 |
+AsaiRcvActor ---|                                 |
+                                                  |
+InjectEventActor ---------------------------------|
 ```
 
 ## Omq Overview
