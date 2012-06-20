@@ -265,8 +265,6 @@ systems. ØMQ is from iMatix and is LGPL open source.
 I heard of 0MQ because DCell, the distributed extension to Celluloid
 uses 0MQ for remote messaging.
 
-2 types of 0mq sockets are used:
-
 ## VB.net 0mq Event Injector
 
 I wrote a VB.net console application to send arbitrary events
@@ -318,4 +316,51 @@ to a 0mq
         Environment.Exit(0)
     End Sub
 ```
+
+## Distributing the call events with AJAX
+
+### Events are read on a 0MQ port
+
+The setup.
+
+```ruby
+distribution_target = Proc.new do |call_event|
+  Celluloid::Actor[:EventDistribution].event! call_event
+end
+Celluloid::Actor[:CvlanCallEvents] =
+   CvlanAjaxEvents::CvlanCallEvents.new("tcp://127.0.0.1:#{@@zmq_publish_socket_port}",distribution_target)
+Celluloid::Actor[:CvlanCallEvents].run!
+```
+
+The implementation.
+
+```ruby
+require 'celluloid/zmq'
+require 'json'
+
+module CvlanAjaxEvents
+  class CvlanCallEvents
+    include Celluloid::ZMQ
+    def initialize(zmq_url,target)
+      @zmq_url = zmq_url
+      @target = target
+      @zmq_socket = SubSocket.new
+      @zmq_socket.setsockopt(::ZMQ::SUBSCRIBE,"")
+      @zmq_socket.connect(@zmq_url)
+    end
+    def run
+      while true
+        msg = @zmq_socket.read
+        @logger.debug "read event #{msg}"
+        event = JSON.parse msg
+        @target.call(event)
+      end
+    end
+  end
+end
+```
+
+### Sinatra HTTP endpoint
+
+## JavaScript for the browser
 
