@@ -198,7 +198,7 @@ end
 
 Let's take a look at this on the wiki.
 
-## Event pipline using Celluloid
+## Event pipeline using Celluloid
 
 Note the use of the Celluloid actor registry.
 
@@ -238,6 +238,11 @@ AsaiRcvActor ---|                                 |
                                                   |
 InjectEventActor ---------------------------------|
 ```
+
+2 of the actors do network IO.
+
++ The InjectEventActor thread receives outbound call events from outbound agent workstations via a 0MQ request-reply socket pair.
++ The ConnectedCallsActor thread writes the call events to a 0MQ pub socket
 
 ## Omq Overview
 
