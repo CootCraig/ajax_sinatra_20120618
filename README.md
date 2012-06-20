@@ -35,7 +35,69 @@ There's a gem for that: Here's one that will connect DLLs to Ruby
 require 'ffi'
 ```
 
-cvlancli.dll
+I know the name of the DLL, cvlancli.dll, and have a C header file with the interface, asai_str.h.
+
+The functions look like this:
+
+```C
+DECLDLL	long asai_close(const void *libPtr, int fd);
+DECLDLL	long asai_errval(const void *libPtr, char mes_buf[]);
+DECLDLL	long asai_get_env(const void *libPtr, int fd, long characteristic, get_type *arg);
+DECLDLL	long asai_rcv(const void *libPtr, int fd, char *buf, long length);
+DECLDLL	long asai_send(const void *libPtr, int fd, const char buf[], const long length);
+DECLDLL	long asai_set_env(const void *libPtr, int fd, long characteristic, set_type *arg);
+DECLDLL	int asai_open(const void *libPtr, char path[], int flags);
+```
+
+The Ruby wrapper to the DLL.
+
+```ruby
+require 'ffi'
+module CvlanLib
+  extend FFI::Library
+
+  module CvlanDll
+    extend FFI::Library
+
+    ffi_lib File.expand_path('../cvlancli.dll',__FILE__)
+
+    attach_function :asai_open, [:string, :int], :int
+    attach_function :asai_set_env, [:int, :int, :string], :int
+    attach_function :asai_send, [:int, :pointer, :int], :int
+    attach_function :asai_rcv, [:int, :pointer, :int], :int
+  end
+end
+```
+
+The event interface is handled by 2 ruby functions.
+
+```ruby
+module CvlanLib
+  def self.asai_rcv(fd)
+    raw_buf = CvlanLib::RAW_BUF.new
+    stat = CvlanLib::CvlanDll.asai_rcv(fd,raw_buf.to_ptr,raw_buf.size)
+    {stat: stat,
+      fd: fd,
+      buf: (stat>0) ? raw_buf : nil,
+      time: Time.now}
+  end
+  def self.asai_open_vdn_events(mapd_ip, vdn, cvlan_node)
+    puts "asai_open_vdn_events mapd_ip #{mapd_ip}, vdn #{vdn}, cvlan_node #{cvlan_node}"
+    fd = CvlanLib::CvlanDll.asai_open(mapd_ip, 0)
+    puts "asai_open fd=#{fd}"
+    stat = CvlanLib::CvlanDll.asai_set_env(fd,CvlanLib::ENVIRONMENT_CHARACTERISTICS[:C_NODE_ID],cvlan_node)
+    cv_info = CvlanLib::CV_INFO_T.new
+    cv_info[:capability] = CvlanLib::CAPABILITY_T[:C_EN_REQ]
+    cv_info[:primitive_type] = CvlanLib::PRIMITIVE_T[:C_REQUEST]
+    cv_info[:cluster_id] = 0
+    cv_info[:domain_ext] = cv_info[:pool].to_ptr
+    cv_info[:domain_type] = CvlanLib::REQUEST_NOTIFICATION_DOMAIN_TYPE[:C_CALL_VECTOR]
+    cv_info[:pool].to_ptr.put_string(0,vdn)
+    stat = CvlanLib::CvlanDll.asai_send(fd,cv_info.to_ptr,cv_info.size)
+    fd
+  end
+end
+```
 
 ## Picking the tools
 
