@@ -172,6 +172,30 @@ There must be a gem for that.  I picked Celluloid.
 
 Celluloid is a concurrent object oriented programming framework for Ruby which lets you build multithreaded programs out of concurrent objects just as easily as you build sequential programs out of regular objects
 
+The author, Tony Acrieri has distilled a lot of coding experience and made them accessable in the celluloid.io gems.  The online documentation is very informative.
+
+[Basic usage](https://github.com/celluloid/celluloid/wiki/Basic-usage)
+
+A little example shows how easy the basics are:
+
+```ruby
+class Sheen
+  include Celluloid
+
+  def initialize(name)
+    @name = name
+  end
+
+  def set_status(status)
+    @status = status
+  end
+
+  def report
+    "#{@name} is #{@status}"
+  end
+end
+```
+
 ## Omq Overview
 
 [The Intelligent Transport Layer](http://www.zeromq.org/)
