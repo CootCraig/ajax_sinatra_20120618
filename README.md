@@ -148,7 +148,7 @@ Whew! that wasn't easy, but FFI made it straight forward.
 
 The phone switch is programmed so that the inbound phone numbers, say 800-123-4567, are referenced by the last 4 digits, 4567, known as a "Vector Directory Number" (VDN).
 
-After a lot of experimentation I find that VDN is accessed through the DLL as separate network socket.
+After a lot of experimentation I find that VDN is accessed through the DLL on separate network sockets.
 
 ```ruby
 asai_fd = CvlanLib::asai_open_vdn_events(APP_CONFIG['cvlan_ip'],vdn,APP_CONFIG['cvlan_node'])
@@ -162,11 +162,15 @@ This means that the call events for each VDN are read on separate file descripto
 rcv = CvlanLib.asai_rcv(@fd)
 ```
 
-The events could be collected in an evented manner or a threaded manner.  I chose do blocking reads on each FD in separate threads.
+The events could be collected in an evented manner or a threaded manner.  I chose to do blocking reads on each FD in separate threads.
 
 There must be a gem for that.  I picked Celluloid.
 
 ## Celluloid
+
+[Celluloid - Painless multithreaded programming for Ruby](http://celluloid.io)
+
+Celluloid is a concurrent object oriented programming framework for Ruby which lets you build multithreaded programs out of concurrent objects just as easily as you build sequential programs out of regular objects
 
 ## Omq Overview
 
