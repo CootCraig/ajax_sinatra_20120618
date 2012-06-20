@@ -360,7 +360,38 @@ module CvlanAjaxEvents
 end
 ```
 
-### Sinatra HTTP endpoint
+### Sinatra HTTP AJAX endpoint
+
+```ruby
+module CvlanAjaxEvents
+  class Server < Sinatra::Base
+    helpers Sinatra::Jsonp
+...
+    get '/event' do
+      extension = params[:extension]
+      last_event_id = params[:eventid]
+      puts "extension #{extension} last_event_id #{last_event_id}"
+      response['Access-Control-Allow-Origin'] = '*'
+      if extension && (extension.length>0)
+        last_event_id = '' unless last_event_id && (last_event_id.length>0)
+        JSONP Celluloid::Actor[:EventDistribution].get_event_for_extension(extension,last_event_id)
+      else
+        JSONP( { :error => 'Invalid parameters' } )
+      end
+    end
+...
+    configure do
+      CvlanAjaxEvents::App.start
+    end
+  end
+end
+```
+
+Every request is handled by a separate thread.  The AJAX requests may wait for the requested event. Here is a Celluloid method call to get an event.  Note that there is no ! suffix on the call, so it is synchronous.
+
+```ruby
+JSONP Celluloid::Actor[:EventDistribution].get_event_for_extension(extension,last_event_id)
+```
 
 ## JavaScript for the browser
 
