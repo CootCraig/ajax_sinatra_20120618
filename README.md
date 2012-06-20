@@ -196,6 +196,38 @@ class Sheen
 end
 ```
 
+Let's take a look at this on the wiki.
+
+## Event pipline using Celluloid
+
+Note the use of the Celluloid actor registry.
+
+```ruby
+Celluloid::Actor[:connected_calls] = CvlanCallEventSourceApp::ConnectedCallsActor.new(@@zmq_publish_socket_port)
+writer_target = Proc.new do |call_event|
+  Celluloid::Actor[:connected_calls].publish!(call_event)
+end
+
+inject_target = Proc.new do |call_event|
+  Celluloid::Actor[:connected_calls].broadcast_event!(call_event)
+end
+Celluloid::Actor[:inject_events] = CvlanCallEventSourceApp::InjectEventActor.new(@@zeromq_inject_event_uri, inject_target)
+
+Celluloid::Actor[:asai_parse] = CvlanCallEventSourceApp::AsaiParseEventActor.new(writer_target)
+
+rcv_target = Proc.new do |call_event|
+  Celluloid::Actor[:asai_parse].parse!(call_event)
+end
+
+APP_CONFIG['vdns'].each do |vdn|
+  actor_symbol = "rcv_vdn_#{vdn}".to_sym
+  asai_fd = CvlanLib::asai_open_vdn_events(APP_CONFIG['cvlan_ip'],vdn,APP_CONFIG['cvlan_node'])
+  @@logger.info "Starting AsaiRcvActor #{vdn} fd #{asai_fd}"
+  Celluloid::Actor[actor_symbol] = CvlanCallEventSourceApp::AsaiRcvActor.new(vdn,asai_fd,rcv_target)
+  Celluloid::Actor[actor_symbol].run!
+end
+```
+
 ## Omq Overview
 
 [The Intelligent Transport Layer](http://www.zeromq.org/)
