@@ -321,7 +321,7 @@ to a 0mq
 
 ### Events are read on a 0MQ port
 
-The setup.
+The setup. Note the ! at the end of the method. In Celluloid this means asynchronous call.
 
 ```ruby
 distribution_target = Proc.new do |call_event|
@@ -332,7 +332,7 @@ Celluloid::Actor[:CvlanCallEvents] =
 Celluloid::Actor[:CvlanCallEvents].run!
 ```
 
-The implementation.
+The implementation.  The run method loops forever doing blocking reads on the 0MQ subscribe socket.  This works because the method was invoked asynchronously.
 
 ```ruby
 require 'celluloid/zmq'
@@ -362,6 +362,8 @@ end
 
 ### Sinatra HTTP AJAX endpoint
 
+The function of the call is to get the next event for an extension number.
+
 ```ruby
 module CvlanAjaxEvents
   class Server < Sinatra::Base
@@ -387,7 +389,7 @@ module CvlanAjaxEvents
 end
 ```
 
-Needed for cross-site use from browser
+This response header is needed for cross-site use from browser
 
 ```ruby
 response['Access-Control-Allow-Origin'] = '*'
@@ -399,7 +401,38 @@ Every request is handled by a separate thread.  The AJAX requests may wait for t
 JSONP Celluloid::Actor[:EventDistribution].get_event_for_extension(extension,last_event_id)
 ```
 
-### xxx collects and responds to the AJAX requests
+### Actor EventDistribution receives events and responds to AJAX requests for events
+
+```ruby
+Celluloid::Actor[:EventDistribution] = CvlanAjaxEvents::EventDistribution.new
+```
+
+Here is method that is called synchonously for the next event.
+
+```ruby
+def get_event_for_extension(extension,call_unique_id)
+  @get_event_count += 1
+  symbol = extension_symbol extension
+  evt = @events_by_extension[symbol]
+  if !evt
+    evt = { :connect_num => extension, :call_unique_id => UUIDTools::UUID.parse_int(0).to_s }
+    evt[:event_id] = next_serial_number
+    @events_by_extension[symbol] = evt
+  elsif call_unique_id.to_s == evt[:event_id].to_s
+    evt = wait symbol
+  end
+  @logger.debug "returning event for extension #{extension} event #{evt}"
+  evt
+end
+```
+
+The wait call is where the method suspends.
+
+```ruby
+evt = wait symbol
+```
+
+[Signaling](https://github.com/celluloid/celluloid/wiki/Signaling) is an advanced technique similar to condition variables in typical multithreaded programming
 
 ## JavaScript for the browser
 
