@@ -700,6 +700,31 @@ var call_event_info = (function() {
 })();
 ```
 
+## Final System Diagram
+
+```
+                                            (inbound)
+                                          Avaya Phone Switch
+                                                    |
+                                                    |
+                                                    | network socket read
+                                                    |
+                                                    |
+                                              cvlancli.dll
+ (outbound)                                         |
+zero_send (VB.net) ----------------------> cvlan_call_event_source
+                     0MQ request-reply              |
+                                                    | 0MQ publish-subscribe
+                                                    |
+                                                    |
+                                           cvlan_ajax_events
+                                                    |
+                                                    | AJAX
+                                                    |
+                                                    |
+                                                 Browser
+```
+
 ## JRuby / Trinidad configs for production
 
 One last teeny tiny problem.  When this was first put into production the
