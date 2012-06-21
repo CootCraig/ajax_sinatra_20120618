@@ -464,7 +464,35 @@ Wait, Wait, how does a browser get the events?
 
 The browser code is packaged in 2 files,
 
-### cvlan_ajax_events_parms_template.js
+### My sample page
+
+```haml
+!!! 5
+%html
+  %head
+    %title Demo Ajax Events
+    %link{:rel => 'stylesheet', :href => '/stylesheets/style.css', :type => 'text/css'}
+    %script{:src => "/js/json2.min.js", :type => "text/javascript"}
+    %script{:src => "/js/jquery-1.7.1.min.js", :type => "text/javascript"}
+    %script{:src => "/js/cvlan_ajax_events_parms.js", :type => "text/javascript"}
+    %script{:src => "/js/cvlan_ajax_events.js", :type => "text/javascript"}
+    %script{:src => "/js/demo.js", :type => "text/javascript"}
+  %body
+    %h1 Demo Ajax Events for an Extension - add parms
+    .ext_form_div
+      %input#ext_input{ :name => 'ext_input', :type => 'text' }
+      %br
+      %button#ext_button
+        Show Events for Extension:
+      %br
+      %input#ext_log{ :name => 'ext_log', :type => 'text', :readonly => 'readonly' }
+```
+
+Note the 2 script files
+
+### cvlan_ajax_events_parms.js
+
+This file sets the specifics for a page. A template file is provided.
 
 ```javascript
 /*
@@ -478,6 +506,8 @@ APP_CALL_EVENTS_PARMS.call_end_func = function(event) {
 ```
 
 ### cvlan_ajax_events.js
+
+There is a default for our production HTTP server.  The default action is to append events to the page.
 
 ```javascript
 /*
@@ -618,4 +648,31 @@ var call_event_info = (function() {
 ```
 
 ## JRuby / Trinidad configs for production
+
+One last teeny tiny problem.  When this was first put into production the
+events stopped after an hour or 2.  It turns out the default thread pool
+was being maxed out (one thread per request).  A little configuration
+magic fixed it right up.
+
+### run.bat
+
+```
+C:\jruby\jruby-1.6.8.dev\bin\jruby.exe
+ --server
+ -J-Xss256k
+ -S trinidad
+ --threadsafe
+ --config c:\GCS\apps\cvlan_ajax_events\sinatra_base\config\trinidad.yml
+```
+
+### trinidad.yml
+
+```ruby
+---
+  port: 38008
+  rackup: config.ru
+  http:
+    maxThreads: 6000
+    connectionTimeout: 60000
+```
 
