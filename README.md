@@ -320,8 +320,8 @@ uses 0MQ for remote messaging.
 
 ## VB.net 0mq Event Injector
 
-I wrote a VB.net console application to send arbitrary events
-to a 0mq
+I wrote a VB.net console application to send arbitrary events to a
+0mq. This is used to inject the outbound call events into the system.
 
 ```
     Sub Main(ByVal args As String())
