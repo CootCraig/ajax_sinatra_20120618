@@ -459,5 +459,163 @@ end
 Whew! Took me a while to get here, but it's all working.  All those nice gems made it straight forward.
 
 ## JavaScript for the browser
+
+Wait, Wait, how does a browser get the events?
+
+The browser code is packaged in 2 files,
+
+### cvlan_ajax_events_parms_template.js
+
+```javascript
+/*
+var APP_CALL_EVENTS_PARMS = {};
+APP_CALL_EVENTS_PARMS.event_url = 'http://$host:$port/event';
+APP_CALL_EVENTS_PARMS.call_start_func = function(event) {
+};
+APP_CALL_EVENTS_PARMS.call_end_func = function(event) {
+};
+ */
+```
+
+### cvlan_ajax_events.js
+
+```javascript
+/*
+ * Setting up:
+ * APP_CALL_EVENTS_PARMS.event_url = {};
+ * APP_CALL_EVENTS_PARMS.event_url = 'http://host:port/event';
+ * APP_CALL_EVENTS_PARMS.call_start_func = function() {};
+ * APP_CALL_EVENTS_PARMS.call_end_func = function() {};
+*/
+var call_event_info = (function() {
+  var app_parms;
+  try {
+    app_parms = APP_CALL_EVENTS_PARMS;
+  } catch(e) {
+    app_parms = {};
+  }
+  var interface = {};
+  var event_url = app_parms.event_url || 'http://gcs1:38008/event';
+  var call_start_func = app_parms.call_start_func || function(event) {
+    var msg = "Call start. ";
+    try {
+      msg = msg + "event_name_s ";
+      msg = msg + event.event_name_s;
+
+      msg = msg + ". calling_num ";
+      msg = msg + event.calling_num;
+
+      msg = msg + ". connect_num ";
+      msg = msg + event.connect_num;
+
+      msg = msg + ". event_id ";
+      msg = msg + event.event_id;
+
+      msg = msg + ". vdn ";
+      msg = msg + event.vdn;
+
+      $('<h2/>').text(msg).appendTo('body');
+    } catch(e) {
+    }
+  };
+  var call_end_func = app_parms.call_end_func || function(event) {
+    var msg = "Call end. ";
+    try {
+      msg = msg + "event_name_s ";
+      msg = msg + event.event_name_s;
+
+      msg = msg + ". calling_num ";
+      msg = msg + event.calling_num;
+
+      msg = msg + ". connect_num ";
+      msg = msg + event.connect_num;
+
+      msg = msg + ". event_id ";
+      msg = msg + event.event_id;
+
+      msg = msg + ". vdn ";
+      msg = msg + event.vdn;
+
+      $('<h2/>').text(msg).appendTo('body');
+    } catch(e) {
+    }
+  };
+  var SUCCESS_DELAY = 300;
+  var ERROR_DELAY = 8 * 1000;
+  var NO_EXTENSION = 'x';
+  var NO_EVENT_ID = 'i';
+  var extension = NO_EXTENSION;
+  var last_event_id = NO_EVENT_ID;
+  var get_last_event_id = function(){ return last_event_id; };
+  var set_last_event_id = function(event_id){ last_event_id = event_id; };
+  var ajax_call_delay = SUCCESS_DELAY;
+  var last_jqxhr = null;
+
+  var ajax_success = function(call_event_string,status,xhr) {
+    var call_event,event_id,event_name;
+    try {
+      call_event = JSON.parse(call_event_string);
+      try {
+        event_id = call_event.event_id || NO_EVENT_ID;
+      } catch (ex2) {
+        event_id = NO_EVENT_ID;
+      }
+      set_last_event_id(event_id);
+      event_name = call_event.event_name_s;
+      if ((/c_drop|c_callend/i).test(event_name)) {
+        call_end_func(call_event);
+      } else if (/c_connected/i.test(event_name)) {
+        call_start_func(call_event);
+      }
+      ajax_call_delay = SUCCESS_DELAY;
+    } catch (ex1) {
+      ajax_call_delay = ERROR_DELAY;
+    }
+  };
+  var ajax_error = function(xhr,status) {
+    ajax_call_delay = ERROR_DELAY;
+  };
+  var ajax_complete = function(xhr,status) {
+    setTimeout(function(){
+      ajax_call(extension,last_event_id);
+    }, ajax_call_delay);
+  };
+  var ajax_call = function(extension, last_event_id) {
+    var call_data = {};
+    call_data.extension = extension;
+    call_data.eventid = last_event_id;
+
+    last_jqxhr = $.ajax({
+      url : event_url,
+      data : call_data,
+      type : 'GET',
+      //
+      // code to run if the request succeeds;
+      // the response is passed to the function
+      success : ajax_success,
+
+      // code to run if the request fails;
+      // the raw request and status codes are
+      // passed to the function
+      error : ajax_error,
+
+      // code to run regardless of success or failure
+      complete : ajax_complete
+    });
+  };
+
+  interface.set_extension = function(aExtension) {
+    extension = aExtension;
+  };
+  interface.start_call_events = function() {
+    // todo: cancel existing ajax call
+    setTimeout(function(){
+      ajax_call(extension,last_event_id);
+    }, 500 );
+  };
+  return interface
+})();
+```
+
 ## JRuby / Trinidad configs for production
 
