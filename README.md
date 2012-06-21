@@ -319,7 +319,7 @@ to a 0mq
 
 ## Distributing the call events with AJAX
 
-### Events are read on a 0MQ port
+### Actor CvlanCallEvents reads events on a 0MQ port and passes them along.
 
 The setup. Note the ! at the end of the method. In Celluloid this means asynchronous call.
 
@@ -389,7 +389,7 @@ module CvlanAjaxEvents
 end
 ```
 
-This response header is needed for cross-site use from browser
+This response header is needed for cross-site use from the browser.
 
 ```ruby
 response['Access-Control-Allow-Origin'] = '*'
@@ -407,7 +407,7 @@ JSONP Celluloid::Actor[:EventDistribution].get_event_for_extension(extension,las
 Celluloid::Actor[:EventDistribution] = CvlanAjaxEvents::EventDistribution.new
 ```
 
-Here is method that is called synchonously for the next event.
+#### Here is the method that is called synchonously for the next event.
 
 ```ruby
 def get_event_for_extension(extension,call_unique_id)
@@ -434,7 +434,30 @@ evt = wait symbol
 
 [Signaling](https://github.com/celluloid/celluloid/wiki/Signaling) is an advanced technique similar to condition variables in typical multithreaded programming
 
-## JavaScript for the browser
+#### Method event stores the events and signals them
 
+```ruby
+def event(wire_evt)
+  begin
+    evt = {}
+    wire_evt.each { |key,val| evt[key.to_sym] = val }
+    if evt[:connect_num]
+      wire_evt = nil
+      evt[:event_id] = next_serial_number
+      symbol = extension_symbol evt[:connect_num]
+      @events_by_extension[symbol] = evt
+      signal symbol, evt
+    else
+      @logger.error "event has no connect_num #{evt}"
+    end
+  rescue => ex
+    @logger.error ex.to_s
+  end
+end
+```
+
+Whew! Took me a while to get here, but it's all working.  All those nice gems made it straight forward.
+
+## JavaScript for the browser
 ## JRuby / Trinidad configs for production
 
