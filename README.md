@@ -146,16 +146,22 @@ Whew! that wasn't easy, but FFI made it straight forward.
 
 ## Collecting the Inbound events
 
-The phone switch is programmed so that the inbound phone numbers, say 800-123-4567, are referenced by the last 4 digits, 4567, known as a "Vector Directory Number" (VDN).
+The phone switch is programmed so that the inbound phone numbers, say
+800-123-4567, are referenced by the last 4 digits, 4567, known as a
+"Vector Directory Number" (VDN).
 
-After a lot of experimentation I find that VDN is accessed through the DLL on separate network sockets.
+After a lot of experimentation I find that a VDN is accessed through
+the DLL on separate network sockets.  The active VDNs are listed in a
+config file.
 
 ```ruby
-asai_fd = CvlanLib::asai_open_vdn_events(APP_CONFIG['cvlan_ip'],vdn,APP_CONFIG['cvlan_node'])
+APP_CONFIG['vdns'].each do |vdn|
+  actor_symbol = "rcv_vdn_#{vdn}".to_sym
+  asai_fd = CvlanLib::asai_open_vdn_events(APP_CONFIG['cvlan_ip'],vdn,APP_CONFIG['cvlan_node'])
+  Celluloid::Actor[actor_symbol] = CvlanCallEventSourceApp::AsaiRcvActor.new(vdn,asai_fd,rcv_target)
+  Celluloid::Actor[actor_symbol].run!
+end
 ```
-
-The active VDNs are listed in a config file.
-
 This means that the call events for each VDN are read on separate file descriptors(FDs).
 
 ```ruby
@@ -243,6 +249,53 @@ InjectEventActor ---------------------------------|
 
 + The InjectEventActor thread receives outbound call events from outbound agent workstations via a 0MQ request-reply socket pair.
 + The ConnectedCallsActor thread writes the call events to a 0MQ pub socket
+
+## Daily restart the JRuby / Celluloid way
+
+The call center has an overnight downtime.  This is convenient, the software can be restarted every night. The following code
+forces an exit nightly.  The Windows Task Scheduler has a task to restart it.
+
+~~~ruby
+Celluloid::Actor[:Shutdown] = CvlanCallEventSourceApp::Shutdown.new
+~~~
+
+~~~ruby
+class Shutdown
+  include Celluloid
+  attr_reader :shutdown_time, :start_time, :timer
+
+  Runtime = java.lang.Runtime.getRuntime()
+
+  def initialize
+    @start_time = Time.now
+    day_later = @start_time + (24 * 60 * 60)
+    @shutdown_time = Time.new day_later.year, day_later.month, day_later.day, 1, 8
+    delay_in_seconds = (@shutdown_time - @start_time).to_i
+
+    if APP_CONFIG['debug_quick_shutdown']
+      quick_delay = 5 * 60
+      @shutdown_time = @start_time + quick_delay
+      delay_in_seconds = (@shutdown_time - @start_time).to_i
+    end
+    @timer = after(delay_in_seconds) do
+      Runtime.halt(1)
+    end
+  end
+end
+~~~
+
+Note the Java called from JRuby
+
+~~~ruby
+Runtime = java.lang.Runtime.getRuntime()
+  ...
+Runtime.halt(1)
+~~~
+
+It turns out that a graceful shutdown of all these threads takes
+some effort.  For this project the drastic kill approach above works
+fine. Celluloid is a fairly new library and better shutdown support will
+be added.
 
 ## Omq Overview
 
