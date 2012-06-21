@@ -387,11 +387,21 @@ module CvlanAjaxEvents
 end
 ```
 
-Every request is handled by a separate thread.  The AJAX requests may wait for the requested event. Here is a Celluloid method call to get an event.  Note that there is no ! suffix on the call, so it is synchronous.
+Needed for cross-site use from browser
+
+```ruby
+response['Access-Control-Allow-Origin'] = '*'
+```
+
+Every request is handled by a separate thread.  The AJAX requests may wait for the requested event. Here is the Celluloid method call to get an event.  Note that there is no ! suffix on the call, so it is synchronous.
 
 ```ruby
 JSONP Celluloid::Actor[:EventDistribution].get_event_for_extension(extension,last_event_id)
 ```
 
+### xxx collects and responds to the AJAX requests
+
 ## JavaScript for the browser
+
+## JRuby / Trinidad configs for production
 
